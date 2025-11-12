@@ -1,41 +1,39 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
+# === Build artifacts ===
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.ninja
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
+*.lo
+*.la
+*.a
 *.so
 *.dylib
 *.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
 *.exe
 *.out
-*.app
 
-# debug information files
-*.dwo
+# === Drogon generated files ===
+drogon_ctl_generated/
+*.log
+
+# === IDE / Editor files ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# === System files ===
+.DS_Store
+Thumbs.db
+
+# === Test / Coverage ===
+*.gcno
+*.gcda
+*.gcov
+coverage/
