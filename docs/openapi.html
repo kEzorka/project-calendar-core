@@ -1,8 +1,24 @@
-<script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
-<div id="swagger-ui"></div>
-<script>
-  SwaggerUIBundle({
-    url: "openapi.yaml",
-    dom_id: "#swagger-ui"
-  })
-</script>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>API Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+</head>
+<body>
+    <nav style="background: white; border-bottom: 2px solid #e2e8f0; padding: 15px 30px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <a href="index.html" style="color: #2d3748; text-decoration: none; font-size: 1.1em; margin-right: 20px; font-weight: 500;">← Home</a>
+        <a href="database.html" style="color: #48bb78; text-decoration: none; margin-right: 15px; font-weight: 500;">📊 Database</a>
+        <a href="permissions.html" style="color: #48bb78; text-decoration: none; margin-right: 15px; font-weight: 500;">🔒 Permissions</a>
+        <a href="api.html" style="color: #48bb78; text-decoration: none; font-weight: 500;">🔌 API</a>
+    </nav>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        SwaggerUIBundle({
+            url: "openapi.yaml",
+            dom_id: "#swagger-ui"
+        })
+    </script>
+</body>
+</html>

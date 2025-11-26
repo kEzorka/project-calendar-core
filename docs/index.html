@@ -1,50 +1,154 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Calendar - Документация</title>
+    <title>Project Calendar - Documentation</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 40px 20px;
         }
-        .nav-card {
-            border: 1px solid #ddd;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 5px;
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
         }
-        .nav-card h2 {
-            margin-top: 0;
+        
+        header {
+            text-align: center;
+            margin-bottom: 50px;
         }
-        a {
-            color: #0366d6;
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            color: #4a5568;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #48bb78;
+        }
+        
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .card h2 {
+            font-size: 1.5em;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .card p {
+            color: #718096;
+            line-height: 1.6;
+        }
+        
+        .card-badge {
+            display: inline-block;
+            background: #48bb78;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-top: 15px;
+        }
+        
+        footer {
+            text-align: center;
+            color: #718096;
+            margin-top: 50px;
+        }
+        
+        footer a {
+            color: #48bb78;
             text-decoration: none;
         }
-        a:hover {
+        
+        footer a:hover {
             text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Project Calendar - Техническая документация</h1>
-    
-    <div class="nav-card">
-        <h2><a href="database.html">📊 Структура базы данных</a></h2>
-        <p>Визуализация схемы PostgreSQL базы данных проекта</p>
-    </div>
-    
-    <div class="nav-card">
-        <h2><a href="permissions.html">🔒 Система прав доступа</a></h2>
-        <p>Схема PermissionService и ролевая модель</p>
-    </div>
-
-    <div>
-      <h2><a href="openapi.html"> 🔌 API документация (OpenAPI)</a></h2>
-      <p>Интерактивная Swagger-документация REST API</p>
+    <div class="container">
+        <header>
+            <h1>📚 Project Calendar</h1>
+            <p>Technical Documentation</p>
+        </header>
+        
+        <div class="cards-grid">
+            <a href="database.html" class="card">
+                <span class="card-icon">📊</span>
+                <h2>Database</h2>
+                <p>Interactive visualization of PostgreSQL database structure, tables and relationships</p>
+                <span class="card-badge">DB Schema</span>
+            </a>
+            
+            <a href="permissions.html" class="card">
+                <span class="card-icon">🔒</span>
+                <h2>Permissions System</h2>
+                <p>Visualization of PermissionService, role model and access control mechanisms</p>
+                <span class="card-badge">Security</span>
+            </a>
+            
+            <a href="openapi.html" class="card">
+                <span class="card-icon">🔌</span>
+                <h2>API Documentation</h2>
+                <p>Interactive Swagger documentation for REST API with endpoint testing</p>
+                <span class="card-badge">OpenAPI</span>
+            </a>
+        </div>
+        
+        <footer>
+            <p>Project Calendar © 2025 | <a href="https://github.com/kEzorka/project-calendar-core">GitHub</a></p>
+        </footer>
     </div>
 </body>
 </html>
