@@ -1,0 +1,316 @@
+name: C++ Code Style & Static Analysis
+
+on:
+  pull_request:
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**.cc'
+      - '**.cxx'
+
+jobs:
+  code-style:
+    name: Check Code Style (clang-format)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **.cpp
+            **.hpp
+            **.h
+            **.cc
+            **.cxx
+
+      - name: Check code style
+        id: style-check
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "## 🎨 Code Formatting Check (clang-format)" > style_report.md
+          echo "" >> style_report.md
+          
+          ERRORS_FOUND=false
+          FILES_WITH_ERRORS=""
+          TOTAL_FILES=0
+          ERROR_COUNT=0
+          
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [ -f "$file" ]; then
+              TOTAL_FILES=$((TOTAL_FILES + 1))
+              
+              # Run clang-format and get diff
+              DIFF=$(clang-format --style=file --fallback-style=Google "$file" | diff -u "$file" - 2>/dev/null || true)
+              
+              if [ -n "$DIFF" ]; then
+                ERRORS_FOUND=true
+                ERROR_COUNT=$((ERROR_COUNT + 1))
+                FILES_WITH_ERRORS="$FILES_WITH_ERRORS$file\n"
+                
+                echo "### ❌ \`$file\`" >> style_report.md
+                echo "" >> style_report.md
+                echo "<details>" >> style_report.md
+                echo "<summary>📝 View suggested changes</summary>" >> style_report.md
+                echo "" >> style_report.md
+                echo "\`\`\`diff" >> style_report.md
+                echo "$DIFF" >> style_report.md
+                echo "\`\`\`" >> style_report.md
+                echo "</details>" >> style_report.md
+                echo "" >> style_report.md
+              fi
+            fi
+          done
+          
+          # Generate summary
+          {
+            echo "---"
+            echo ""
+            echo "### 📊 Summary"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Files Checked | $TOTAL_FILES |"
+            echo "| Files with Issues | $ERROR_COUNT |"
+            if [ "$ERRORS_FOUND" = true ]; then
+              echo "| Status | ❌ **Failed** |"
+            else
+              echo "| Status | ✅ **Passed** |"
+            fi
+            echo ""
+          } >> style_report.md
+          
+          if [ "$ERRORS_FOUND" = true ]; then
+            {
+              echo "### 🛠️ How to fix"
+              echo ""
+              echo "Run the following command to automatically fix formatting:"
+              echo ""
+              echo "\`\`\`bash"
+              echo "clang-format -i --style=file --fallback-style=Google <file>"
+              echo "\`\`\`"
+              echo ""
+              echo "Or format all C++ files in the project:"
+              echo ""
+              echo "\`\`\`bash"
+              echo "find . -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format -i --style=file --fallback-style=Google"
+              echo "\`\`\`"
+            } >> style_report.md
+            
+            echo "errors_found=true" >> $GITHUB_OUTPUT
+          else
+            {
+              echo "### ✅ All files passed formatting check!"
+              echo ""
+              echo "Great job! Your code follows the project's formatting guidelines. 🎉"
+            } >> style_report.md
+            
+            echo "errors_found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: No C++ files changed
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: |
+          echo "## 🎨 Code Formatting Check (clang-format)" > style_report.md
+          echo "" >> style_report.md
+          echo "ℹ️ No C++ files were changed in this pull request." >> style_report.md
+          echo "" >> style_report.md
+          echo "### 📊 Summary" >> style_report.md
+          echo "" >> style_report.md
+          echo "| Metric | Value |" >> style_report.md
+          echo "|--------|-------|" >> style_report.md
+          echo "| Files Checked | 0 |" >> style_report.md
+          echo "| Status | ⏭️ **Skipped** |" >> style_report.md
+
+      - name: Post comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: cpp-format-check
+          path: style_report.md
+
+      - name: Fail if style errors found
+        if: steps.style-check.outputs.errors_found == 'true'
+        run: |
+          echo "❌ Code formatting issues were found. Please fix them before merging."
+          exit 1
+
+  static-analysis:
+    name: Static Analysis (clang-tidy)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **.cpp
+            **.hpp
+            **.h
+            **.cc
+            **.cxx
+
+      - name: Run clang-tidy
+        id: tidy-check
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "## 🔬 Static Analysis (clang-tidy)" > tidy_report.md
+          echo "" >> tidy_report.md
+          
+          ERRORS_FOUND=false
+          TOTAL_FILES=0
+          FILES_WITH_ISSUES=0
+          TOTAL_WARNINGS=0
+          TOTAL_ERRORS=0
+          
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [ -f "$file" ]; then
+              TOTAL_FILES=$((TOTAL_FILES + 1))
+              
+              # Run clang-tidy and capture output
+              TIDY_OUTPUT=$(clang-tidy "$file" -- -std=c++17 2>&1 || true)
+              
+              # Count warnings and errors
+              WARNINGS=$(echo "$TIDY_OUTPUT" | grep -c "warning:" || true)
+              ERRORS=$(echo "$TIDY_OUTPUT" | grep -c "error:" || true)
+              
+              if [ "$WARNINGS" -gt 0 ] || [ "$ERRORS" -gt 0 ]; then
+                ERRORS_FOUND=true
+                FILES_WITH_ISSUES=$((FILES_WITH_ISSUES + 1))
+                TOTAL_WARNINGS=$((TOTAL_WARNINGS + WARNINGS))
+                TOTAL_ERRORS=$((TOTAL_ERRORS + ERRORS))
+                
+                echo "### 📄 \`$file\`" >> tidy_report.md
+                echo "" >> tidy_report.md
+                
+                if [ "$ERRORS" -gt 0 ]; then
+                  echo "❌ **$ERRORS error(s)** | ⚠️ **$WARNINGS warning(s)**" >> tidy_report.md
+                else
+                  echo "⚠️ **$WARNINGS warning(s)**" >> tidy_report.md
+                fi
+                echo "" >> tidy_report.md
+                
+                echo "<details>" >> tidy_report.md
+                echo "<summary>📋 View detailed analysis</summary>" >> tidy_report.md
+                echo "" >> tidy_report.md
+                
+                # Parse and format the output nicely
+                echo "$TIDY_OUTPUT" | grep -E "(warning:|error:|note:)" | while IFS= read -r line; do
+                  if echo "$line" | grep -q "error:"; then
+                    echo "- 🔴 \`$line\`" >> tidy_report.md
+                  elif echo "$line" | grep -q "warning:"; then
+                    echo "- 🟡 \`$line\`" >> tidy_report.md
+                  else
+                    echo "- 🔵 \`$line\`" >> tidy_report.md
+                  fi
+                done
+                
+                echo "" >> tidy_report.md
+                echo "</details>" >> tidy_report.md
+                echo "" >> tidy_report.md
+              fi
+            fi
+          done
+          
+          # Generate summary
+          {
+            echo "---"
+            echo ""
+            echo "### 📊 Summary"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Files Analyzed | $TOTAL_FILES |"
+            echo "| Files with Issues | $FILES_WITH_ISSUES |"
+            echo "| Total Errors | $TOTAL_ERRORS |"
+            echo "| Total Warnings | $TOTAL_WARNINGS |"
+            if [ "$ERRORS_FOUND" = true ]; then
+              echo "| Status | ❌ **Issues Found** |"
+            else
+              echo "| Status | ✅ **Passed** |"
+            fi
+            echo ""
+          } >> tidy_report.md
+          
+          if [ "$ERRORS_FOUND" = true ]; then
+            {
+              echo "### 🛠️ Common Fixes"
+              echo ""
+              echo "| Issue Type | Description |"
+              echo "|------------|-------------|"
+              echo "| \`readability-identifier-naming\` | Follow naming conventions (CamelCase for classes, snake_case for variables) |"
+              echo "| \`readability-function-size\` | Split large functions into smaller ones (max 60 lines) |"
+              echo "| \`readability-magic-numbers\` | Replace magic numbers with named constants |"
+              echo "| \`readability-implicit-bool-conversion\` | Use explicit boolean conversions |"
+              echo ""
+              echo "### 💡 Tips"
+              echo ""
+              echo "- Run locally: \`clang-tidy <file> -- -std=c++17\`"
+              echo "- Auto-fix some issues: \`clang-tidy -fix <file> -- -std=c++17\`"
+              echo "- Suppress false positives with: \`// NOLINT\` or \`// NOLINTNEXTLINE\`"
+            } >> tidy_report.md
+            
+            echo "errors_found=true" >> $GITHUB_OUTPUT
+          else
+            {
+              echo "### ✅ All files passed static analysis!"
+              echo ""
+              echo "Excellent! No issues detected by clang-tidy. 🎉"
+            } >> tidy_report.md
+            
+            echo "errors_found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: No C++ files changed
+        if: steps.changed-files.outputs.any_changed != 'true'
+        run: |
+          echo "## 🔬 Static Analysis (clang-tidy)" > tidy_report.md
+          echo "" >> tidy_report.md
+          echo "ℹ️ No C++ files were changed in this pull request." >> tidy_report.md
+          echo "" >> tidy_report.md
+          echo "### 📊 Summary" >> tidy_report.md
+          echo "" >> tidy_report.md
+          echo "| Metric | Value |" >> tidy_report.md
+          echo "|--------|-------|" >> tidy_report.md
+          echo "| Files Analyzed | 0 |" >> tidy_report.md
+          echo "| Status | ⏭️ **Skipped** |" >> tidy_report.md
+
+      - name: Post comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: cpp-tidy-check
+          path: tidy_report.md
+
+      - name: Fail if clang-tidy errors found
+        if: steps.tidy-check.outputs.errors_found == 'true'
+        run: |
+          echo "❌ Static analysis issues were found. Please review and fix them."
+          exit 1
