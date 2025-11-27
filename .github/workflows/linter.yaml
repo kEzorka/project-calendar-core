@@ -96,30 +96,8 @@ jobs:
           } >> style_report.md
           
           if [ "$ERRORS_FOUND" = true ]; then
-            {
-              echo "### 🛠️ How to fix"
-              echo ""
-              echo "Run the following command to automatically fix formatting:"
-              echo ""
-              echo "\`\`\`bash"
-              echo "clang-format -i --style=file --fallback-style=Google <file>"
-              echo "\`\`\`"
-              echo ""
-              echo "Or format all C++ files in the project:"
-              echo ""
-              echo "\`\`\`bash"
-              echo "find . -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format -i --style=file --fallback-style=Google"
-              echo "\`\`\`"
-            } >> style_report.md
-            
             echo "errors_found=true" >> $GITHUB_OUTPUT
           else
-            {
-              echo "### ✅ All files passed formatting check!"
-              echo ""
-              echo "Great job! Your code follows the project's formatting guidelines. 🎉"
-            } >> style_report.md
-            
             echo "errors_found=false" >> $GITHUB_OUTPUT
           fi
 
@@ -218,23 +196,16 @@ jobs:
                 fi
                 echo "" >> tidy_report.md
                 
-                echo "<details>" >> tidy_report.md
-                echo "<summary>📋 View detailed analysis</summary>" >> tidy_report.md
+                # Parse and format the output nicely - highlight lines with errors
                 echo "" >> tidy_report.md
-                
-                # Parse and format the output nicely
-                echo "$TIDY_OUTPUT" | grep -E "(warning:|error:|note:)" | while IFS= read -r line; do
+                echo "$TIDY_OUTPUT" | grep -E "(warning:|error:)" | while IFS= read -r line; do
+                  # Extract line number and message
                   if echo "$line" | grep -q "error:"; then
                     echo "- 🔴 \`$line\`" >> tidy_report.md
                   elif echo "$line" | grep -q "warning:"; then
                     echo "- 🟡 \`$line\`" >> tidy_report.md
-                  else
-                    echo "- 🔵 \`$line\`" >> tidy_report.md
                   fi
                 done
-                
-                echo "" >> tidy_report.md
-                echo "</details>" >> tidy_report.md
                 echo "" >> tidy_report.md
               fi
             fi
@@ -261,31 +232,8 @@ jobs:
           } >> tidy_report.md
           
           if [ "$ERRORS_FOUND" = true ]; then
-            {
-              echo "### 🛠️ Common Fixes"
-              echo ""
-              echo "| Issue Type | Description |"
-              echo "|------------|-------------|"
-              echo "| \`readability-identifier-naming\` | Follow naming conventions (CamelCase for classes, snake_case for variables) |"
-              echo "| \`readability-function-size\` | Split large functions into smaller ones (max 60 lines) |"
-              echo "| \`readability-magic-numbers\` | Replace magic numbers with named constants |"
-              echo "| \`readability-implicit-bool-conversion\` | Use explicit boolean conversions |"
-              echo ""
-              echo "### 💡 Tips"
-              echo ""
-              echo "- Run locally: \`clang-tidy <file> -- -std=c++17\`"
-              echo "- Auto-fix some issues: \`clang-tidy -fix <file> -- -std=c++17\`"
-              echo "- Suppress false positives with: \`// NOLINT\` or \`// NOLINTNEXTLINE\`"
-            } >> tidy_report.md
-            
             echo "errors_found=true" >> $GITHUB_OUTPUT
           else
-            {
-              echo "### ✅ All files passed static analysis!"
-              echo ""
-              echo "Excellent! No issues detected by clang-tidy. 🎉"
-            } >> tidy_report.md
-            
             echo "errors_found=false" >> $GITHUB_OUTPUT
           fi
 
