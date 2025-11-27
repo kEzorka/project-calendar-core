@@ -5,7 +5,7 @@ int main() {
   const int pup = 0;
 
 
-
+  const int pupa = 0;
 
   for (;;) {}
 
@@ -13,5 +13,5 @@ int main() {
   ;
 
 
-  
+
 }
