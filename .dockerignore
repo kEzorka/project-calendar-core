@@ -1,0 +1,39 @@
+# === Build artifacts ===
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.ninja
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+
+# === Drogon generated files ===
+drogon_ctl_generated/
+*.log
+
+# === IDE / Editor files ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# === System files ===
+.DS_Store
+Thumbs.db
+
+# === Test / Coverage ===
+*.gcno
+*.gcda
+*.gcov
+coverage/
