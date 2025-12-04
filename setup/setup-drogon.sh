@@ -12,14 +12,14 @@ install_ubuntu() {
     # Update package list and install required dependencies
     sudo apt update
     sudo apt install -y \
-        build-essential \   # GCC, g++, make, etc.
-        cmake \             # Build system
-        git \               # Source control
-        uuid-dev \          # UUID library
-        libjsoncpp-dev \    # JSON library
-        libssl-dev \        # OpenSSL for TLS/SSL
-        zlib1g-dev \        # Compression library
-        libyaml-cpp-dev     # YAML library
+        build-essential \
+        cmake \
+        git \
+        uuid-dev \
+        libjsoncpp-dev \
+        libssl-dev \
+        zlib1g-dev \
+        libyaml-cpp-dev
 }
 
 install_macos() {
@@ -72,3 +72,57 @@ case "$OS" in
 esac
 
 echo "=== All dependencies installed successfully! ==="
+
+# Clone and build Drogon from source
+echo "=== Building Drogon from source ==="
+
+DROGON_VERSION="v1.9.8"
+BUILD_DIR="/tmp/drogon_build"
+
+# Create build directory
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR"
+
+# Clone Drogon repository
+if [ -d "drogon" ]; then
+    echo "Drogon directory already exists, updating..."
+    cd drogon
+    git fetch --all
+    git checkout "$DROGON_VERSION"
+    git submodule update --init --recursive
+else
+    echo "Cloning Drogon repository..."
+    git clone https://github.com/drogonframework/drogon.git
+    cd drogon
+    git checkout "$DROGON_VERSION"
+    git submodule update --init --recursive
+fi
+
+# Create build directory for CMake
+mkdir -p build
+cd build
+
+# Configure with CMake
+echo "Configuring Drogon with CMake..."
+cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF
+
+# Build Drogon
+echo "Building Drogon (this may take a while)..."
+make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+
+# Install Drogon
+echo "Installing Drogon..."
+sudo make install
+
+# Update shared library cache (Linux only)
+if [ "$OS" = "Linux" ]; then
+    sudo ldconfig
+fi
+
+# Clean up build directory (optional)
+# rm -rf "$BUILD_DIR"
+
+echo "=== Drogon installed successfully! ==="
+echo "You can now use Drogon in your projects."
