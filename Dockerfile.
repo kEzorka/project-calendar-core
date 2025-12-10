@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     uuid-dev \
     zlib1g-dev \
-    libyaml-cpp-dev \
+    libyaml-cpp0.7 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/drogonframework/drogon.git /tmp/drogon && \
@@ -45,6 +45,7 @@ RUN apt-get update && apt-get install -y \
     libjsoncpp25 \
     libssl3 \
     uuid-runtime \
+    libyaml-cpp-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
