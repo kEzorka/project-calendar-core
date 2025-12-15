@@ -3,21 +3,46 @@ project(project-calendar)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
+# Find required packages
 find_package(Drogon CONFIG REQUIRED)
 
-file(GLOB_RECURSE PROJECT_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/*.cpp
-    ${CMAKE_SOURCE_DIR}/test_examples/*.cpp
-    ${CMAKE_SOURCE_DIR}/headers/*.hpp
+# Collect model source files (.cpp instead of .cc)
+file(GLOB MODEL_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/models/*.cpp
 )
 
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
+# Collect API source files
+file(GLOB API_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/API/*.cpp
+)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon)
+# Main source
+set(MAIN_SOURCE ${CMAKE_SOURCE_DIR}/src/main.cpp)
+
+# Create library for models
+add_library(models_lib STATIC ${MODEL_SOURCES})
+target_link_libraries(models_lib PUBLIC Drogon::Drogon)
+target_include_directories(models_lib PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+# Main executable
+add_executable(${PROJECT_NAME} 
+    ${MAIN_SOURCE}
+    ${API_SOURCES}
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    Drogon::Drogon
+    models_lib
+    bcrypt
+)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/examples
-    ${CMAKE_SOURCE_DIR}/headers
 )
