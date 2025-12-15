@@ -14,8 +14,10 @@ RUN apt-get update && apt-get install -y \
     uuid-dev \
     zlib1g-dev \
     libyaml-cpp0.7 \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Drogon framework
 RUN git clone https://github.com/drogonframework/drogon.git /tmp/drogon && \
     cd /tmp/drogon && \
     git checkout v1.9.8 && \
@@ -26,6 +28,29 @@ RUN git clone https://github.com/drogonframework/drogon.git /tmp/drogon && \
     make install && \
     ldconfig && \
     rm -rf /tmp/drogon
+
+# Install bcrypt library (builds source)
+RUN git clone https://github.com/hilch/Bcrypt.cpp.git /tmp/bcrypt && \
+    cd /tmp/bcrypt && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make && \
+    cp libbcrypt.a /usr/local/lib/ && \
+    cp ../include/bcrypt.h /usr/local/include/ && \
+    ldconfig && \
+    rm -rf /tmp/bcrypt
+
+# Install jwt-cpp library (header-only)
+RUN git clone https://github.com/Thalhammer/jwt-cpp.git /tmp/jwt-cpp && \
+    cd /tmp/jwt-cpp && \
+    git checkout v0.7.0 && \
+    mkdir -p /usr/local/include && \
+    cp -r include/jwt-cpp /usr/local/include/ && \
+    cd /tmp && \
+    git clone https://github.com/kazuho/picojson.git && \
+    mkdir -p /usr/local/include/picojson && \
+    cp picojson/picojson.h /usr/local/include/picojson/ && \
+    rm -rf /tmp/jwt-cpp /tmp/picojson
 
 WORKDIR /build
 

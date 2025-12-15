@@ -31,6 +31,7 @@ services:
       DB_NAME: project_calendar
       DB_USER: pc_admin
       DB_PASSWORD: pc_password
+      JWT_SECRET: your_secret_key_change_in_production
     ports:
       - "8080:8080"
     restart: unless-stopped
